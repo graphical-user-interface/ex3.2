@@ -7,6 +7,8 @@ import {
 	List,
 	ListItem,
 	TextField,
+	Typography,
+	Button,
 } from "@material-ui/core"
 
 const useStyles = makeStyles((theme) => ({
@@ -18,6 +20,11 @@ const useStyles = makeStyles((theme) => ({
 		padding: theme.spacing(2, 1),
 		textAlign: "center",
 		color: theme.palette.text.secondary,
+	},
+	row: {
+		display: "flex",
+		flexDirection: "row",
+		justifyContent: "space-between",
 	},
 }))
 
@@ -37,12 +44,33 @@ export default function App() {
 		{ index: 1, date: convertDate(today) },
 	])
 	const [selectedIndex, setSelectedIndex] = useState(-1)
-	const handleListItemClick = (event, index) => {
-		setSelectedIndex(index)
-		// console.log(index)
+	const handleListItemClick = (i) => {
+		setSelectedIndex(i)
 	}
-	const handleDateChange = (event) => {
-		console.log(event.target.value)
+	const handleDateChange = (e, i) => {
+		let newEvents = [...events]
+		newEvents[i].date = e.target.value
+		setEvents(newEvents)
+	}
+	const handleAddEvent = () => {
+		const newIndex =
+			Math.max.apply(
+				Math,
+				events.map(function (event) {
+					return event.index
+				}),
+			) + 1
+
+		setEvents([...events, { index: newIndex, date: convertDate(today) }])
+	}
+	const handleDeleteEvent = () => {
+		if (selectedIndex >= 0) {
+			const newEvents = events.filter(
+				(event) => event.index !== selectedIndex,
+			)
+			setEvents(newEvents)
+			setSelectedIndex(-1)
+		}
 	}
 
 	return (
@@ -57,25 +85,27 @@ export default function App() {
 									return (
 										<ListItem
 											key={event.index}
+											className={classes.row}
 											button
 											selected={
 												selectedIndex === event.index
 											}
 											onClick={(e) =>
-												handleListItemClick(
-													e,
-													event.index,
-												)
+												handleListItemClick(event.index)
 											}>
-											{event.date}
+											<Typography
+												className={classes.date}>
+												{event.date}
+											</Typography>
 											<TextField
-												label='Event start date'
 												type='date'
 												onChange={(e) => {
-													handleDateChange(e)
+													handleDateChange(
+														e,
+														event.index,
+													)
 												}}
 												defaultValue={event.date}
-												className={classes.textField}
 												InputLabelProps={{
 													shrink: true,
 												}}
@@ -84,6 +114,20 @@ export default function App() {
 									)
 								})}
 							</List>
+							<Grid className={classes.row}>
+								<Button
+									variant='contained'
+									color='primary'
+									onClick={handleAddEvent}>
+									Add
+								</Button>
+								<Button
+									variant='contained'
+									color='secondary'
+									onClick={handleDeleteEvent}>
+									Delete
+								</Button>
+							</Grid>
 						</Paper>
 					</Grid>
 					<Grid item xs={2}></Grid>
